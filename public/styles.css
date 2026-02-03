@@ -4056,7 +4056,6 @@ section.animated .program-item:nth-child(4) { animation-delay: 0.2s; }
     height: 550px;
     background: white;
     border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     display: flex;
     flex-direction: column;
     overflow: hidden;
@@ -4404,7 +4403,6 @@ section.animated .program-item:nth-child(4) { animation-delay: 0.2s; }
     height: 520px;
     background: white;
     border-radius: 16px;
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     display: none;
     flex-direction: column;
     overflow: hidden;
