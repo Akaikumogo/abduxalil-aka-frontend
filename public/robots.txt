@@ -1,0 +1,20 @@
+# Buran Consulting Robots.txt
+User-agent: *
+Allow: /
+
+# Sitemap
+Sitemap: https://buranconsulting.uz/sitemap.xml
+
+# Disallow admin paths
+Disallow: /admin
+Disallow: /api/
+
+# Allow search engines to crawl all public pages
+User-agent: Googlebot
+Allow: /
+
+User-agent: Bingbot
+Allow: /
+
+User-agent: Yandex
+Allow: /
