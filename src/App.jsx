@@ -715,7 +715,7 @@ export default function App() {
           {programs.length > 0 ? programs.map((prog, i) => {
             const isLeft = i % 2 === 1;
             const num = String(i + 1).padStart(2, "0");
-            const imgSrc = prog.imageUz ? (prog.imageUz.startsWith("/uploads") ? getImageUrl(prog.imageUz) : prog.imageUz) : `images/programs/program-${i + 1}.webp`;
+            const imgSrc = prog.imageUz ? getImageUrl(prog.imageUz) : `images/programs/program-${i + 1}.webp`;
             return (
               <div className={`program-item ${isLeft ? "program-item-left" : "program-item-right"}`} key={prog.id || i}>
                 <div className="program-number">{num}</div>
@@ -789,7 +789,7 @@ export default function App() {
           <p className="section-subtitle" data-i18n="countries.subtitle">Dunyoning TOP universitetlarida o'qish imkoniyati</p>
           <div className="countries-grid-large">
             {displayCountries.map((c, i) => {
-              const imgSrc = c.imageUz ? (c.imageUz.startsWith("/uploads") ? getImageUrl(c.imageUz) : c.imageUz) : (c.image || `images/countries/country-${i + 1}.webp`);
+              const imgSrc = (c.imageUz || c.image) ? getImageUrl(c.imageUz || c.image) : `images/countries/country-${i + 1}.webp`;
               return (
                 <div className="country-card-large" key={c.id || i}>
                   <div className="country-image">

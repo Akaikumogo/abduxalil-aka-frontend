@@ -23,11 +23,15 @@ const api = axios.create({
   },
 });
 
-// Helper to get full image URL
+// Helper to get full image URL (uploads har doim backend domain bilan)
 export const getImageUrl = (path) => {
   if (!path) return null;
   if (path.startsWith('http')) return path;
-  if (path.startsWith('/uploads')) return `${API_BASE}${path}`;
+  const uploadsPath = path.startsWith('/') ? path : `/${path}`;
+  if (uploadsPath.startsWith('/uploads')) {
+    const base = API_BASE || FALLBACK_API_ORIGIN;
+    return `${base}${uploadsPath}`;
+  }
   return path;
 };
 
