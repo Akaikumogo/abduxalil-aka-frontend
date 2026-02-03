@@ -20,6 +20,7 @@ export default function App() {
   const [testimonials, setTestimonials] = useState([]);
   const [tips, setTips] = useState([]);
   const [faqs, setFaqs] = useState([]);
+  const [mapUrl, setMapUrl] = useState("");
 
   useEffect(() => {
     const cleanups = [];
@@ -65,6 +66,7 @@ export default function App() {
           const imgPath = lang === "en" ? heroData.imageEn : heroData.imageUz;
           if (imgPath) setHeroImageSrc(getImageUrl(imgPath));
         }
+        if (contactData?.mapUrl) setMapUrl(contactData.mapUrl);
       } catch (error) {
         console.error("Failed to load API data:", error);
       }
