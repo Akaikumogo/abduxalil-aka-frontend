@@ -487,21 +487,6 @@ export default function App() {
       cleanups.push(() => clearInterval(pollInterval));
     };
 
-    // Resolve hero image if not from API
-    const resolveHeroImage = () => {
-      if (heroImageSrc) return;
-      const candidates = ["images/hero/hero-students.webp", "images/hero/hero-students.jpg"];
-      const tryNext = (i) => {
-        if (i >= candidates.length) return;
-        const img = new Image();
-        img.onload = () => setHeroImageSrc(candidates[i]);
-        img.onerror = () => tryNext(i + 1);
-        img.src = candidates[i];
-      };
-      tryNext(0);
-    };
-
-    resolveHeroImage();
     initTranslation();
     initMenuAndScrolling();
     initFaq();
@@ -609,7 +594,7 @@ export default function App() {
               <button className="btn-hero-gradient" data-i18n="hero.cta">KONSULTATSIYA OLISH</button>
             </div>
             <div className="hero-students">
-              <img src={heroImageSrc || "images/hero/hero-students.webp"} alt="Talabalar" className="hero-students-img" loading="lazy" />
+              {heroImageSrc && <img src={heroImageSrc} alt="Talabalar" className="hero-students-img" loading="lazy" />}
             </div>
           </div>
         </div>
