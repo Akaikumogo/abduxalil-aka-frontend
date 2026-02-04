@@ -327,33 +327,113 @@ export default function App() {
       cleanups.push(() => observer.disconnect());
     };
 
-    // About: statik bitta rasm (slider emas, backend shart emas — faqat public/images/about dan)
+    // About slider — eski frontend (@frontend/) bilan bir xil: avto-slide, dots, prev/next
     const initAboutSlider = () => {
-      const container = document.querySelector(".about-slider-container");
-      if (!container) return;
+      const sliderContainer = document.querySelector(".about-slider-container");
+      const dotsContainer = document.querySelector(".about-slider-dots");
+      const prevBtn = document.querySelector(".about-slider-prev");
+      const nextBtn = document.querySelector(".about-slider-next");
 
-      const formats = ["webp", "jpg", "jpeg", "png"];
-      const checkImage = (src) => new Promise((r) => {
-        const img = new Image();
-        img.onload = () => r(true);
-        img.onerror = () => r(false);
-        img.src = src;
-      });
+      if (!sliderContainer || !dotsContainer) return;
 
-      const findFirstImage = async () => {
-        for (let i = 1; i <= 20; i++) {
-          for (const fmt of formats) {
-            const path = `images/about/${i}.${fmt}`;
-            if (await checkImage(path)) return path;
+      const maxImages = 20;
+      const imageFormats = ["jpg", "jpeg", "png", "webp"];
+
+      const checkImageExists = (src) =>
+        new Promise((resolve) => {
+          const img = new Image();
+          img.onload = () => resolve(true);
+          img.onerror = () => resolve(false);
+          img.src = src;
+        });
+
+      const findAvailableImages = async () => {
+        const foundImages = [];
+        for (let i = 1; i <= maxImages; i += 1) {
+          let imageFound = false;
+          for (let j = 0; j < imageFormats.length; j += 1) {
+            const format = imageFormats[j];
+            const imagePath = `images/about/${i}.${format}`;
+            const exists = await checkImageExists(imagePath);
+            if (exists && !imageFound) {
+              imageFound = true;
+              foundImages.push({ index: i - 1, path: imagePath });
+            }
           }
         }
-        return null;
+        return foundImages.sort((a, b) => a.index - b.index);
       };
 
-      findFirstImage().then((path) => {
-        if (!path) return;
-        container.innerHTML = `<div class="about-slide active"><img src="${path}" alt="Buran Consulting" class="about-img" loading="lazy" decoding="async"></div>`;
-      });
+      const createSlider = (images) => {
+        if (images.length === 0) {
+          sliderContainer.innerHTML = `
+            <div class="about-slide active">
+              <div style="width: 100%; height: 100%; background: #f0f0f0; display: flex; align-items: center; justify-content: center; color: #999;">
+                <p>Rasmlar topilmadi</p>
+              </div>
+            </div>
+          `;
+          return;
+        }
+
+        sliderContainer.innerHTML = "";
+        dotsContainer.innerHTML = "";
+
+        images.forEach((img, index) => {
+          const slide = document.createElement("div");
+          slide.className = `about-slide ${index === 0 ? "active" : ""}`;
+          slide.innerHTML = `<img src="${img.path}" alt="Buran Consulting ${index + 1}" class="about-img" loading="${index === 0 ? "eager" : "lazy"}" decoding="async">`;
+          sliderContainer.appendChild(slide);
+
+          const dot = document.createElement("span");
+          dot.className = `about-dot ${index === 0 ? "active" : ""}`;
+          dot.setAttribute("data-slide", index);
+          dotsContainer.appendChild(dot);
+        });
+
+        const slides = document.querySelectorAll(".about-slide");
+        const dots = document.querySelectorAll(".about-dot");
+        let currentSlide = 0;
+        let slideInterval = null;
+
+        const showSlide = (index) => {
+          slides.forEach((slide) => slide.classList.remove("active"));
+          dots.forEach((dot) => dot.classList.remove("active"));
+          if (slides[index]) slides[index].classList.add("active");
+          if (dots[index]) dots[index].classList.add("active");
+          currentSlide = index;
+        };
+
+        const nextSlide = () => showSlide((currentSlide + 1) % slides.length);
+        const prevSlide = () => showSlide((currentSlide - 1 + slides.length) % slides.length);
+        const startInterval = () => {
+          slideInterval = setInterval(nextSlide, 4000);
+        };
+        const resetInterval = () => {
+          clearInterval(slideInterval);
+          startInterval();
+        };
+
+        if (nextBtn) addListener(nextBtn, "click", () => { nextSlide(); resetInterval(); });
+        if (prevBtn) addListener(prevBtn, "click", () => { prevSlide(); resetInterval(); });
+        dots.forEach((dot, index) => {
+          addListener(dot, "click", () => {
+            showSlide(index);
+            resetInterval();
+          });
+        });
+
+        const slider = document.querySelector(".about-slider");
+        if (slider) {
+          addListener(slider, "mouseenter", () => clearInterval(slideInterval));
+          addListener(slider, "mouseleave", () => startInterval());
+        }
+
+        startInterval();
+        cleanups.push(() => clearInterval(slideInterval));
+      };
+
+      findAvailableImages().then(createSlider);
     };
 
     // Student images
@@ -653,6 +733,15 @@ export default function App() {
             <div className="about-image">
               <div className="about-slider">
                 <div className="about-slider-container"></div>
+                <div className="about-slider-dots"></div>
+                <div className="about-slider-nav">
+                  <button type="button" className="about-slider-prev" aria-label="Previous slide">
+                    ‹
+                  </button>
+                  <button type="button" className="about-slider-next" aria-label="Next slide">
+                    ›
+                  </button>
+                </div>
               </div>
             </div>
           </div>
