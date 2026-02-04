@@ -95,9 +95,9 @@ export default function App() {
             if (value && typeof value === "object" && keys[i] in value) {
               value = value[keys[i]];
             } else return;
-          }
+            }
           if (element.tagName === "INPUT" || element.tagName === "TEXTAREA") {
-            element.placeholder = value;
+              element.placeholder = value;
           } else if (element.hasAttribute("data-i18n-html")) {
             element.innerHTML = value.replace("+998712000811", '<a href="tel:+998712000811">+998712000811</a>');
           } else {
@@ -155,10 +155,10 @@ export default function App() {
 
         addListener(document, "click", (e) => {
           if (navMenu.classList.contains("active") && !navMenu.contains(e.target) && !menuToggle.contains(e.target)) {
-            navMenu.classList.remove("active");
-            menuToggle.classList.remove("active");
-            body.style.overflow = "";
-          }
+              navMenu.classList.remove("active");
+              menuToggle.classList.remove("active");
+              body.style.overflow = "";
+            }
         });
       }
 
@@ -182,7 +182,7 @@ export default function App() {
         const item = question.closest?.(".faq-item");
         if (!item) return;
 
-        const isActive = item.classList.contains("active");
+          const isActive = item.classList.contains("active");
         document.querySelectorAll(".faq-item").forEach((i) => i.classList.remove("active"));
         if (!isActive) item.classList.add("active");
       });
@@ -196,15 +196,15 @@ export default function App() {
 
       const openModal = () => {
         if (modal) {
-          modal.classList.add("active");
-          document.body.style.overflow = "hidden";
+        modal.classList.add("active");
+        document.body.style.overflow = "hidden";
         }
       };
 
       const closeModal = () => {
         if (modal) {
-          modal.classList.remove("active");
-          document.body.style.overflow = "";
+        modal.classList.remove("active");
+        document.body.style.overflow = "";
         }
       };
 
@@ -267,23 +267,23 @@ export default function App() {
         // Backup to Google Sheets
         await sendToGoogleSheets(data);
 
-        alert("Rahmat! Sizning so'rovingiz qabul qilindi. Tez orada siz bilan bog'lanamiz.");
-        form.reset();
+              alert("Rahmat! Sizning so'rovingiz qabul qilindi. Tez orada siz bilan bog'lanamiz.");
+              form.reset();
 
-        const modal = document.getElementById("consultationModal");
+              const modal = document.getElementById("consultationModal");
         if (modal?.classList.contains("active")) {
-          modal.classList.remove("active");
-          document.body.style.overflow = "";
-        }
+                modal.classList.remove("active");
+                document.body.style.overflow = "";
+              }
 
-        setTimeout(() => {
+            setTimeout(() => {
           isSubmitting = false;
           if (submitBtn) {
             submitBtn.classList.remove("btn-loading");
             submitBtn.disabled = false;
             submitBtn.textContent = submitBtn.dataset.originalText;
-          }
-        }, 2000);
+              }
+            }, 2000);
       };
 
       addListener(document.getElementById("simpleConsultationForm"), "submit", handleSubmit);
@@ -308,9 +308,9 @@ export default function App() {
       };
 
       const observer = new IntersectionObserver((entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting && !entry.target.classList.contains("animate")) {
-            entry.target.classList.add("animate");
+          entries.forEach((entry) => {
+            if (entry.isIntersecting && !entry.target.classList.contains("animate")) {
+              entry.target.classList.add("animate");
             const statNumber = entry.target.querySelector(".stat-number-value");
             const original = entry.target.getAttribute("data-value") || "0";
             const value = parseInt(original.replace(/[^0-9]/g, ""), 10) || 0;
@@ -327,11 +327,10 @@ export default function App() {
       cleanups.push(() => observer.disconnect());
     };
 
-    // About slider
+    // About: statik bitta rasm (slider emas, backend shart emas — faqat public/images/about dan)
     const initAboutSlider = () => {
       const container = document.querySelector(".about-slider-container");
-      const dotsContainer = document.querySelector(".about-slider-dots");
-      if (!container || !dotsContainer) return;
+      if (!container) return;
 
       const formats = ["webp", "jpg", "jpeg", "png"];
       const checkImage = (src) => new Promise((r) => {
@@ -341,68 +340,20 @@ export default function App() {
         img.src = src;
       });
 
-      const findImages = async () => {
-        const found = [];
+      const findFirstImage = async () => {
         for (let i = 1; i <= 20; i++) {
           for (const fmt of formats) {
             const path = `images/about/${i}.${fmt}`;
-            if (await checkImage(path)) {
-              found.push({ index: i - 1, path });
-              break;
-            }
+            if (await checkImage(path)) return path;
           }
         }
-        return found.sort((a, b) => a.index - b.index);
+        return null;
       };
 
-      const createSlider = (images) => {
-        if (!images.length) return;
-        container.innerHTML = "";
-        dotsContainer.innerHTML = "";
-
-        images.forEach((img, i) => {
-          const slide = document.createElement("div");
-          slide.className = `about-slide ${i === 0 ? "active" : ""}`;
-          slide.innerHTML = `<img src="${img.path}" alt="Buran ${i + 1}" class="about-img" loading="lazy" decoding="async">`;
-          container.appendChild(slide);
-
-          const dot = document.createElement("span");
-          dot.className = `about-dot ${i === 0 ? "active" : ""}`;
-          dot.dataset.slide = i;
-          dotsContainer.appendChild(dot);
-        });
-
-        let current = 0;
-        let interval = null;
-        const slides = container.querySelectorAll(".about-slide");
-        const dots = dotsContainer.querySelectorAll(".about-dot");
-
-        const show = (idx) => {
-          slides.forEach((s) => s.classList.remove("active"));
-          dots.forEach((d) => d.classList.remove("active"));
-          slides[idx]?.classList.add("active");
-          dots[idx]?.classList.add("active");
-          current = idx;
-        };
-
-        const next = () => show((current + 1) % slides.length);
-        const prev = () => show((current - 1 + slides.length) % slides.length);
-        const start = () => { interval = setInterval(next, 4000); };
-        const reset = () => { clearInterval(interval); start(); };
-
-        document.querySelector(".about-slider-next")?.addEventListener("click", () => { next(); reset(); });
-        document.querySelector(".about-slider-prev")?.addEventListener("click", () => { prev(); reset(); });
-        dots.forEach((d, i) => d.addEventListener("click", () => { show(i); reset(); }));
-
-        const slider = document.querySelector(".about-slider");
-        slider?.addEventListener("mouseenter", () => clearInterval(interval));
-        slider?.addEventListener("mouseleave", start);
-
-        start();
-        cleanups.push(() => clearInterval(interval));
-      };
-
-      findImages().then(createSlider);
+      findFirstImage().then((path) => {
+        if (!path) return;
+        container.innerHTML = `<div class="about-slide active"><img src="${path}" alt="Buran Consulting" class="about-img" loading="lazy" decoding="async"></div>`;
+      });
     };
 
     // Student images
@@ -645,15 +596,15 @@ export default function App() {
                 <div className="stat-card" key={stat.id || i} data-value={valueText}>
                   <h2 className="stat-number">
                     <span className="stat-number-value">{valueText}</span>
-                    {labelText && <span className="stat-number-label">{labelText}</span>}
+                    {labelText && <><br /><span className="stat-number-label">{labelText}</span></>}
                   </h2>
-                  <div className="stat-line"></div>
+              <div className="stat-line"></div>
                   <p className="stat-text">{t(stat, "description")}</p>
-                </div>
+            </div>
               );
             })}
-          </div>
-        </div>
+            </div>
+            </div>
       </motion.section>
 
       <motion.section {...sectionAnim} className="consultation-section" id="consultation-section">
@@ -702,11 +653,6 @@ export default function App() {
             <div className="about-image">
               <div className="about-slider">
                 <div className="about-slider-container"></div>
-                <div className="about-slider-dots"></div>
-                <div className="about-slider-nav">
-                  <button className="about-slider-prev" aria-label="Previous">‹</button>
-                  <button className="about-slider-next" aria-label="Next">›</button>
-                </div>
               </div>
             </div>
           </div>
@@ -722,10 +668,10 @@ export default function App() {
                 <div className="feature-icon">{f.icon}</div>
                 <h3>{t(f, "title")}</h3>
                 <p>{t(f, "description")}</p>
-              </div>
+            </div>
             ))}
-          </div>
-        </div>
+            </div>
+            </div>
       </motion.section>
 
       <motion.section {...sectionAnim} className="programs" id="programs">
@@ -754,51 +700,51 @@ export default function App() {
             );
           }) : (
             <>
-              <div className="program-item program-item-right">
-                <div className="program-number">01</div>
-                <div className="program-content">
-                  <div className="program-text">
+          <div className="program-item program-item-right">
+            <div className="program-number">01</div>
+            <div className="program-content">
+              <div className="program-text">
                     <h3 className="program-title" data-i18n="programs.languagePrep.title">Language Preparation Courses</h3>
                     <p data-i18n="programs.languagePrep.text1">Ko'pchilik yoshlar ingliz tilini bilmagani sabab xorijda o'qish orzusi yopildi deb o'ylaydi.</p>
                     <p><strong data-i18n="programs.languagePrep.question">🔎 Qaysi davlatlar? Qanday shartlar?</strong></p>
                     <button className="btn-link">Batafsil</button>
-                  </div>
-                  <div className="program-image"><img src="images/programs/language-prep.webp" alt="Language Prep" className="program-img" loading="lazy" decoding="async" /></div>
-                </div>
               </div>
-              <div className="program-item program-item-left">
-                <div className="program-number">02</div>
-                <div className="program-content">
+                  <div className="program-image"><img src="images/programs/language-prep.webp" alt="Language Prep" className="program-img" loading="lazy" decoding="async" /></div>
+              </div>
+            </div>
+          <div className="program-item program-item-left">
+            <div className="program-number">02</div>
+            <div className="program-content">
                   <div className="program-image"><img src="images/programs/foundation.webp" alt="Foundation" className="program-img" loading="lazy" decoding="async" /></div>
-                  <div className="program-text">
+              <div className="program-text">
                     <h3 className="program-title" data-i18n="programs.foundation.title">Foundation Programme</h3>
                     <p data-i18n="programs.foundation.text1">Dunyoning ko'plab universitetlarida bakalavr bosqichiga kirish uchun 12 yillik ta'lim talab qilinadi.</p>
                     <button className="btn-link">Batafsil</button>
-                  </div>
-                </div>
               </div>
-              <div className="program-item program-item-right">
-                <div className="program-number">03</div>
-                <div className="program-content">
-                  <div className="program-text">
+            </div>
+          </div>
+          <div className="program-item program-item-right">
+            <div className="program-number">03</div>
+            <div className="program-content">
+              <div className="program-text">
                     <h3 className="program-title" data-i18n="programs.bachelor.title">Bachelor's Degree</h3>
                     <p data-i18n="programs.bachelor.text1">Xorijiy universitetlarda bakalavr ta'limi odatda 3 yil davom etadi.</p>
                     <button className="btn-link">Batafsil</button>
-                  </div>
-                  <div className="program-image"><img src="images/programs/bachelor.webp" alt="Bachelor" className="program-img" loading="lazy" decoding="async" /></div>
-                </div>
               </div>
-              <div className="program-item program-item-left">
-                <div className="program-number">04</div>
-                <div className="program-content">
+                  <div className="program-image"><img src="images/programs/bachelor.webp" alt="Bachelor" className="program-img" loading="lazy" decoding="async" /></div>
+              </div>
+            </div>
+          <div className="program-item program-item-left">
+            <div className="program-number">04</div>
+            <div className="program-content">
                   <div className="program-image"><img src="images/programs/masters.webp" alt="Masters" className="program-img" loading="lazy" decoding="async" /></div>
-                  <div className="program-text">
+              <div className="program-text">
                     <h3 className="program-title" data-i18n="programs.masters.title">Master's Degree</h3>
                     <p data-i18n="programs.masters.text1">Magistratura bosqichi — bilimni chuqurlashtirish va xalqaro mehnat bozoriga chiqish uchun muhim qadam.</p>
                     <button className="btn-link">Batafsil</button>
-                  </div>
-                </div>
               </div>
+            </div>
+          </div>
             </>
           )}
         </div>
@@ -813,16 +759,16 @@ export default function App() {
               const imgSrc = (c.imageUz || c.image) ? getImageUrl(c.imageUz || c.image) : `images/countries/country-${i + 1}.webp`;
               return (
                 <div className="country-card-large" key={c.id || i}>
-                  <div className="country-image">
+              <div className="country-image">
                     <img src={imgSrc} alt={t(c, "name")} className="country-img" loading="lazy" decoding="async" />
                     <div className="country-overlay">{c.bgText || t(c, "name").toUpperCase()}</div>
                     <div className="country-name">{t(c, "name")}</div>
-                  </div>
-                </div>
+              </div>
+            </div>
               );
             })}
-          </div>
-        </div>
+              </div>
+            </div>
       </motion.section>
 
       <motion.section {...sectionAnim} className="how-it-works" id="how-it-works">
@@ -835,8 +781,8 @@ export default function App() {
                 <div className={`timeline-content ${i % 2 === 0 ? "right" : "left"}`}>
                   <h3>{t(step, "title")}</h3>
                   <p>{t(step, "description")}</p>
-                </div>
               </div>
+            </div>
             )) : (
               <>
                 <div className="timeline-item"><div className="timeline-number">1</div><div className="timeline-content right"><h3>Murojaat qilasiz</h3><p>Ushbu sayt orqali yoki 712000811 raqamiga qo'ng'iroq qilib konsultatsiya olasiz</p></div></div>
@@ -846,8 +792,8 @@ export default function App() {
                 <div className="timeline-item"><div className="timeline-number">5</div><div className="timeline-content left"><h3>Ketishga tayyorgarlik!</h3><p>VISAni olib, yotoqxonadan joy bron qilingandan keyin ketishga tayyorgarlik ko'ring!</p></div></div>
               </>
             )}
-          </div>
-        </div>
+              </div>
+            </div>
       </motion.section>
 
       <motion.section {...sectionAnim} className="video-section" id="video-section">
@@ -866,41 +812,41 @@ export default function App() {
             <div className="student-testimonials-grid">
               {testimonials.length > 0 ? testimonials.slice(0, 3).map((test, i) => (
                 <div className="student-testimonial-card" key={test.id || i}>
-                  <div className="student-profile-img">
+                <div className="student-profile-img">
                     <img src={test.avatar ? getImageUrl(test.avatar) : `images/students/${i + 1}.webp`} alt={t(test, "name")} className="student-img" data-student-img={i + 1} loading="lazy" decoding="async" />
-                  </div>
-                  <div className="student-testimonial-content">
+                </div>
+                <div className="student-testimonial-content">
                     <p className="student-testimonial-text">{t(test, "text")}</p>
                     <h3 className="student-name">{t(test, "name")}</h3>
                     <p className="student-university">{t(test, "university")}</p>
-                  </div>
                 </div>
+              </div>
               )) : (
                 <>
-                  <div className="student-testimonial-card">
+              <div className="student-testimonial-card">
                     <div className="student-profile-img"><img src="" alt="Student" className="student-img" data-student-img="1" loading="lazy" decoding="async" /></div>
-                    <div className="student-testimonial-content">
+                <div className="student-testimonial-content">
                       <p className="student-testimonial-text" data-i18n="certificates.students.student4.text">Hammaga salom. Men Muhammadali Sattorov...</p>
                       <h3 className="student-name" data-i18n="certificates.students.student4.name">Muhammadali Sattorov</h3>
                       <p className="student-university" data-i18n="certificates.students.student4.university">NJUPT University, China</p>
-                    </div>
-                  </div>
-                  <div className="student-testimonial-card">
+                </div>
+              </div>
+              <div className="student-testimonial-card">
                     <div className="student-profile-img"><img src="" alt="Student" className="student-img" data-student-img="2" loading="lazy" decoding="async" /></div>
                     <div className="student-testimonial-content">
                       <p className="student-testimonial-text" data-i18n="certificates.students.student5.text">Hello! My name is MUHAMMADALI...</p>
                       <h3 className="student-name" data-i18n="certificates.students.student5.name">Muhammadali Bakhtiyar</h3>
                       <p className="student-university" data-i18n="certificates.students.student5.university">Canadian University Dubai</p>
-                    </div>
+                </div>
                   </div>
                   <div className="student-testimonial-card">
                     <div className="student-profile-img"><img src="" alt="Student" className="student-img" data-student-img="3" loading="lazy" decoding="async" /></div>
-                    <div className="student-testimonial-content">
+                <div className="student-testimonial-content">
                       <p className="student-testimonial-text" data-i18n="certificates.students.student6.text">Assalomu alaykum! Men Alibek Eshboltaev...</p>
                       <h3 className="student-name" data-i18n="certificates.students.student6.name">Alibek Eshboltaev</h3>
                       <p className="student-university" data-i18n="certificates.students.student6.university">Berlin, Germany</p>
-                    </div>
-                  </div>
+                </div>
+              </div>
                 </>
               )}
             </div>
@@ -916,10 +862,10 @@ export default function App() {
                 return (
                   <div className="testimonial-video-card" key={tip.id || i}>
                     <h3 className="testimonial-video-title">{t(tip, "title")}</h3>
-                    <div className="testimonial-video-wrapper">
+                <div className="testimonial-video-wrapper">
                       <iframe width="560" height="315" src={`https://www.youtube.com/embed/${vid}`} title={t(tip, "title")} frameBorder="0" allowFullScreen></iframe>
-                    </div>
-                  </div>
+                </div>
+              </div>
                 );
               }) : (
                 <>
@@ -928,9 +874,9 @@ export default function App() {
                   <div className="testimonial-video-card"><h3 className="testimonial-video-title">Til bilmasdan</h3><div className="testimonial-video-wrapper"><iframe width="560" height="315" src="https://www.youtube.com/embed/_bmEEebUC84" title="No language" frameBorder="0" allowFullScreen></iframe></div></div>
                 </>
               )}
-            </div>
-          </div>
-        </div>
+                </div>
+              </div>
+                </div>
       </motion.section>
 
       <motion.section {...sectionAnim} className="faq" id="faq">
@@ -950,8 +896,8 @@ export default function App() {
                 <div className="faq-item"><div className="faq-question"><h3 data-i18n="faq.questions.q3.question">Kontrakt summasi nechpul?</h3><span className="faq-toggle">+</span></div><div className="faq-answer"><p data-i18n="faq.questions.q3.answer">Kontrakt summasi tanlangan dastur va universitetga qarab farq qiladi.</p></div></div>
               </>
             )}
-          </div>
-        </div>
+              </div>
+            </div>
       </motion.section>
 
       <motion.section {...sectionAnim} className="location" id="location">
@@ -976,7 +922,7 @@ export default function App() {
             <div className="footer-section">
               <img src="SVG/gorizontal logo qizil mark,oq type.svg" alt="Buran Consulting" className="footer-logo" loading="lazy" decoding="async" />
               <p className="footer-tagline" data-i18n="footer.tagline">Sizning xalqaro ta'lim bo'yicha ishonchli hamkoringiz</p>
-            </div>
+              </div>
             <div className="footer-section">
               <h3 data-i18n="footer.quickLinks">Tezkor havolalar</h3>
               <ul className="footer-links">
@@ -1018,8 +964,8 @@ export default function App() {
             <div className="modal-header-content">
               <div className="modal-header-text"><h3 className="modal-banner-title">KONSULTATSIYA</h3><h4 className="modal-banner-subtitle">CHET ELDA TA'LIM</h4></div>
               <div className="modal-header-logo"><img src="SVG/gorizontal logo qizil mark,qora type.svg" alt="Buran Consulting" className="modal-logo-img" loading="lazy" decoding="async" /></div>
-            </div>
-          </div>
+              </div>
+              </div>
           <div className="modal-body">
             <h2 className="modal-title" data-i18n="consultation.title">BEPUL KONSULTATSIYA OLING</h2>
             <p className="modal-subtitle" data-i18n="consultation.subtitle">Buning uchun quyidagi formani to'ldiring</p>
@@ -1071,8 +1017,8 @@ export default function App() {
           <div className="chat-messages" id="chatMessages">
             <div className="chat-message chat-message-operator">
               <div className="chat-message-content"><p data-i18n="chat.welcome">Salom! Qanday yordam bera olaman?</p><span className="chat-message-time"></span></div>
+              </div>
             </div>
-          </div>
           <div className="chat-input-container">
             <input type="text" className="chat-input" id="chatInput" placeholder="Xabar yozing..." />
             <button className="chat-send" id="chatSend" aria-label="Send">
