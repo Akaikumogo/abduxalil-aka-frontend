@@ -172,6 +172,18 @@ export const faqApi = {
   },
 };
 
+// About Settings
+export const aboutApi = {
+  get: async () => {
+    try {
+      const response = await api.get('/about');
+      return response.data.data;
+    } catch (error) {
+      return null;
+    }
+  },
+};
+
 // Contact Settings
 export const contactApi = {
   get: async () => {

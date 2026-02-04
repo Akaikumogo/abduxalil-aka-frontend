@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useRef } from "react";
+import { motion } from "framer-motion";
 import { translations } from "./translations.js";
 import { 
   heroApi, statsApi, featuresApi, programsApi, countriesApi, 
-  stepsApi, videoApi, testimonialsApi, tipsApi, faqApi, contactApi,
+  stepsApi, videoApi, testimonialsApi, tipsApi, faqApi, aboutApi, contactApi,
   applicationsApi, chatApi, sendToGoogleSheets, getImageUrl 
 } from "./services/api.js";
 
@@ -21,6 +22,7 @@ export default function App() {
   const [tips, setTips] = useState([]);
   const [faqs, setFaqs] = useState([]);
   const [mapUrl, setMapUrl] = useState("");
+  const [aboutSettings, setAboutSettings] = useState(null);
 
   useEffect(() => {
     const cleanups = [];
@@ -35,7 +37,7 @@ export default function App() {
       try {
         const [
           statsData, featuresData, programsData, countriesData, 
-          stepsData, videoData, testimonialsData, tipsData, faqData, heroData, contactData
+          stepsData, videoData, testimonialsData, tipsData, faqData, heroData, contactData, aboutData
         ] = await Promise.all([
           statsApi.getAll().catch(() => []),
           featuresApi.getAll().catch(() => []),
@@ -48,6 +50,7 @@ export default function App() {
           faqApi.getAll().catch(() => []),
           heroApi.getSettings().catch(() => null),
           contactApi.get().catch(() => null),
+          aboutApi.get().catch(() => null),
         ]);
 
         if (statsData?.length) setStats(statsData);
@@ -67,6 +70,7 @@ export default function App() {
           if (imgPath) setHeroImageSrc(getImageUrl(imgPath));
         }
         if (contactData?.mapUrl) setMapUrl(contactData.mapUrl);
+        if (aboutData) setAboutSettings(aboutData);
       } catch (error) {
         console.error("Failed to load API data:", error);
       }
@@ -170,14 +174,17 @@ export default function App() {
 
     // FAQ
     const initFaq = () => {
-      document.querySelectorAll(".faq-item").forEach((item) => {
-        const question = item.querySelector(".faq-question");
+      // Event delegation: works even when FAQ items render later from API
+      addListener(document, "click", (e) => {
+        const target = e.target;
+        const question = target?.closest ? target.closest(".faq-question") : null;
         if (!question) return;
-        addListener(question, "click", () => {
-          const isActive = item.classList.contains("active");
-          document.querySelectorAll(".faq-item").forEach((i) => i.classList.remove("active"));
-          if (!isActive) item.classList.add("active");
-        });
+        const item = question.closest?.(".faq-item");
+        if (!item) return;
+
+        const isActive = item.classList.contains("active");
+        document.querySelectorAll(".faq-item").forEach((i) => i.classList.remove("active"));
+        if (!isActive) item.classList.add("active");
       });
     };
 
@@ -356,7 +363,7 @@ export default function App() {
         images.forEach((img, i) => {
           const slide = document.createElement("div");
           slide.className = `about-slide ${i === 0 ? "active" : ""}`;
-          slide.innerHTML = `<img src="${img.path}" alt="Buran ${i + 1}" class="about-img">`;
+          slide.innerHTML = `<img src="${img.path}" alt="Buran ${i + 1}" class="about-img" loading="lazy" decoding="async">`;
           container.appendChild(slide);
 
           const dot = document.createElement("span");
@@ -506,6 +513,18 @@ export default function App() {
     return language === "en" ? (item[`${field}En`] || item[field] || "") : (item[`${field}Uz`] || item[field] || "");
   };
 
+  const aboutT = (fieldBase, fallback = "") => {
+    if (!aboutSettings) return fallback;
+    return language === "en" ? (aboutSettings[`${fieldBase}En`] || fallback) : (aboutSettings[`${fieldBase}Uz`] || fallback);
+  };
+
+  const sectionAnim = {
+    initial: { y: 24 },
+    whileInView: { y: 0 },
+    viewport: { once: true, amount: 0.2 },
+    transition: { duration: 0.6, ease: "easeOut" },
+  };
+
   // Default data for fallback
   const defaultStats = [
     { id: "1", value: 10000, prefix: "$", suffix: "", descriptionUz: "10000$ gacha grant yutib olish imkoniyati", descriptionEn: "Win up to $10,000 grant" },
@@ -558,7 +577,7 @@ export default function App() {
             <div className="nav-wrapper">
               <div className="logo">
                 <a href="#">
-                  <img src="SVG/gorizontal logo qizil mark,qora type.svg" alt="Buran Consulting" className="logo-img" />
+                  <img src="SVG/gorizontal logo qizil mark,qora type.svg" alt="Buran Consulting" className="logo-img" loading="eager" decoding="async" />
                 </a>
               </div>
               <ul className="nav-menu" id="navMenu">
@@ -584,7 +603,7 @@ export default function App() {
         </nav>
       </header>
 
-      <section className="hero">
+      <motion.section {...sectionAnim} className="hero">
         <div className="hero-background" style={heroImageSrc ? { backgroundImage: `linear-gradient(135deg, rgba(30, 58, 138, 0.25) 0%, rgba(59, 130, 246, 0.25) 100%), url('${heroImageSrc}')` } : undefined}></div>
         <div className="container">
           <div className="hero-content">
@@ -594,22 +613,39 @@ export default function App() {
               <button className="btn-hero-gradient" data-i18n="hero.cta">KONSULTATSIYA OLISH</button>
             </div>
             <div className="hero-students">
-              {heroImageSrc && <img src={heroImageSrc} alt="Talabalar" className="hero-students-img" loading="lazy" />}
+              {heroImageSrc && <img src={heroImageSrc} alt="Talabalar" className="hero-students-img" loading="eager" fetchPriority="high" decoding="async" />}
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="statistics" id="statistics">
+      <motion.section {...sectionAnim} className="statistics" id="statistics">
         <div className="container">
           <div className="stats-grid">
             {displayStats.map((stat, i) => {
-              const val = stat.value || parseInt(String(stat.descriptionUz || "").replace(/[^0-9]/g, ""), 10) || 0;
-              const display = `${stat.prefix || ""}${val}${stat.suffix || ""}`;
+              const rawVal = stat.value ?? (parseInt(String(stat.descriptionUz || "").replace(/[^0-9]/g, ""), 10) || 0);
+
+              let valueText = "";
+              let labelText = "";
+
+              if (typeof rawVal === "string") {
+                const s = rawVal.trim();
+                const m = s.match(/^([+\$]?\d[\d.,]*%?)(?:\s*)(.*)$/);
+                valueText = (m?.[1] || s).trim();
+                labelText = (m?.[2] || "").trim();
+
+                // Apply API prefix/suffix if string value doesn't already contain them
+                if (stat.prefix && !valueText.startsWith(stat.prefix)) valueText = `${stat.prefix}${valueText}`;
+                if (stat.suffix && !valueText.endsWith(stat.suffix)) valueText = `${valueText}${stat.suffix}`;
+              } else {
+                valueText = `${stat.prefix || ""}${rawVal}${stat.suffix || ""}`;
+              }
+
               return (
-                <div className="stat-card" key={stat.id || i} data-value={display}>
+                <div className="stat-card" key={stat.id || i} data-value={valueText}>
                   <h2 className="stat-number">
-                    <span className="stat-number-value">{display}</span>
+                    <span className="stat-number-value">{valueText}</span>
+                    {labelText && <span className="stat-number-label">{labelText}</span>}
                   </h2>
                   <div className="stat-line"></div>
                   <p className="stat-text">{t(stat, "description")}</p>
@@ -618,9 +654,9 @@ export default function App() {
             })}
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="consultation-section" id="consultation-section">
+      <motion.section {...sectionAnim} className="consultation-section" id="consultation-section">
         <div className="container">
           <div className="consultation-wrapper">
             <h2 className="consultation-title" data-i18n="consultation.title">Bepul konsultatsiya oling</h2>
@@ -652,16 +688,16 @@ export default function App() {
             </form>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="about" id="about">
+      <motion.section {...sectionAnim} className="about" id="about">
         <div className="container">
           <div className="about-content">
             <div className="about-text">
-              <h2 data-i18n="about.title">Biz haqimizda</h2>
-              <p data-i18n="about.text1">Buran Consulting 2018 yil tashkil topgan va ingliz zabon yurtdagi universitetlar bilan hamkorlikda ishlaydi. Shu vaqtgacha biz 500 ga yaqin insonlarga universitetga kirishda, universitetdan chegirma olishda va viza jarayonlarida ko'maklashgan.</p>
-              <p data-i18n="about.text2">2023 yil Buran Consulting Oxford International Group tomonidan eng zo'r o'rta Osiyodagi agentlik deb topilgan. Bundan tashqari, Buran Consulting British council tomonidan tasdiqlangan agentlik hisoblanadi va ICEF jamg'armasi azosi hisoblanadi.</p>
-              <a href="#consultation-section" className="btn-secondary" data-i18n="about.more">Batafsil</a>
+              <h2>{aboutT("title", "Biz haqimizda")}</h2>
+              <p>{aboutT("text1", "Buran Consulting 2018 yil tashkil topgan va ingliz zabon yurtdagi universitetlar bilan hamkorlikda ishlaydi. Shu vaqtgacha biz 500 ga yaqin insonlarga universitetga kirishda, universitetdan chegirma olishda va viza jarayonlarida ko'maklashgan.")}</p>
+              <p>{aboutT("text2", "2023 yil Buran Consulting Oxford International Group tomonidan eng zo'r o'rta Osiyodagi agentlik deb topilgan. Bundan tashqari, Buran Consulting British council tomonidan tasdiqlangan agentlik hisoblanadi va ICEF jamg'armasi azosi hisoblanadi.")}</p>
+              <a href="#consultation-section" className="btn-secondary">{aboutT("buttonText", "Batafsil")}</a>
             </div>
             <div className="about-image">
               <div className="about-slider">
@@ -675,9 +711,9 @@ export default function App() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="why-us" id="why-us">
+      <motion.section {...sectionAnim} className="why-us" id="why-us">
         <div className="container">
           <h2 className="section-title" data-i18n="whyUs.title">Nima uchun Buran Consulting?</h2>
           <div className="features-grid">
@@ -690,9 +726,9 @@ export default function App() {
             ))}
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="programs" id="programs">
+      <motion.section {...sectionAnim} className="programs" id="programs">
         <div className="container">
           <h2 className="section-title" data-i18n="programs.title">Bizning dasturlar</h2>
           <p className="section-subtitle" data-i18n="programs.subtitle">Biz talabalarga quyidagi dasturlarni taklif qilamiz:</p>
@@ -705,14 +741,14 @@ export default function App() {
               <div className={`program-item ${isLeft ? "program-item-left" : "program-item-right"}`} key={prog.id || i}>
                 <div className="program-number">{num}</div>
                 <div className="program-content">
-                  {isLeft && <div className="program-image"><img src={imgSrc} alt={t(prog, "title")} className="program-img" loading="lazy" /></div>}
+                  {isLeft && <div className="program-image"><img src={imgSrc} alt={t(prog, "title")} className="program-img" loading="lazy" decoding="async" /></div>}
                   <div className="program-text">
                     <h3 className="program-title">{t(prog, "title")}</h3>
                     <p>{t(prog, "description1")}</p>
                     {t(prog, "description2") && <p><strong>{t(prog, "description2")}</strong></p>}
                     <button className="btn-link">Batafsil</button>
                   </div>
-                  {!isLeft && <div className="program-image"><img src={imgSrc} alt={t(prog, "title")} className="program-img" loading="lazy" /></div>}
+                  {!isLeft && <div className="program-image"><img src={imgSrc} alt={t(prog, "title")} className="program-img" loading="lazy" decoding="async" /></div>}
                 </div>
               </div>
             );
@@ -727,13 +763,13 @@ export default function App() {
                     <p><strong data-i18n="programs.languagePrep.question">🔎 Qaysi davlatlar? Qanday shartlar?</strong></p>
                     <button className="btn-link">Batafsil</button>
                   </div>
-                  <div className="program-image"><img src="images/programs/language-prep.webp" alt="Language Prep" className="program-img" loading="lazy" /></div>
+                  <div className="program-image"><img src="images/programs/language-prep.webp" alt="Language Prep" className="program-img" loading="lazy" decoding="async" /></div>
                 </div>
               </div>
               <div className="program-item program-item-left">
                 <div className="program-number">02</div>
                 <div className="program-content">
-                  <div className="program-image"><img src="images/programs/foundation.webp" alt="Foundation" className="program-img" loading="lazy" /></div>
+                  <div className="program-image"><img src="images/programs/foundation.webp" alt="Foundation" className="program-img" loading="lazy" decoding="async" /></div>
                   <div className="program-text">
                     <h3 className="program-title" data-i18n="programs.foundation.title">Foundation Programme</h3>
                     <p data-i18n="programs.foundation.text1">Dunyoning ko'plab universitetlarida bakalavr bosqichiga kirish uchun 12 yillik ta'lim talab qilinadi.</p>
@@ -749,13 +785,13 @@ export default function App() {
                     <p data-i18n="programs.bachelor.text1">Xorijiy universitetlarda bakalavr ta'limi odatda 3 yil davom etadi.</p>
                     <button className="btn-link">Batafsil</button>
                   </div>
-                  <div className="program-image"><img src="images/programs/bachelor.webp" alt="Bachelor" className="program-img" loading="lazy" /></div>
+                  <div className="program-image"><img src="images/programs/bachelor.webp" alt="Bachelor" className="program-img" loading="lazy" decoding="async" /></div>
                 </div>
               </div>
               <div className="program-item program-item-left">
                 <div className="program-number">04</div>
                 <div className="program-content">
-                  <div className="program-image"><img src="images/programs/masters.webp" alt="Masters" className="program-img" loading="lazy" /></div>
+                  <div className="program-image"><img src="images/programs/masters.webp" alt="Masters" className="program-img" loading="lazy" decoding="async" /></div>
                   <div className="program-text">
                     <h3 className="program-title" data-i18n="programs.masters.title">Master's Degree</h3>
                     <p data-i18n="programs.masters.text1">Magistratura bosqichi — bilimni chuqurlashtirish va xalqaro mehnat bozoriga chiqish uchun muhim qadam.</p>
@@ -766,9 +802,9 @@ export default function App() {
             </>
           )}
         </div>
-      </section>
+      </motion.section>
 
-      <section className="countries" id="countries">
+      <motion.section {...sectionAnim} className="countries" id="countries">
         <div className="container">
           <h2 className="section-title" data-i18n="countries.title">BIZ O'QISHGA YUBORADIGAN DAVLATLAR</h2>
           <p className="section-subtitle" data-i18n="countries.subtitle">Dunyoning TOP universitetlarida o'qish imkoniyati</p>
@@ -778,7 +814,7 @@ export default function App() {
               return (
                 <div className="country-card-large" key={c.id || i}>
                   <div className="country-image">
-                    <img src={imgSrc} alt={t(c, "name")} className="country-img" loading="lazy" />
+                    <img src={imgSrc} alt={t(c, "name")} className="country-img" loading="lazy" decoding="async" />
                     <div className="country-overlay">{c.bgText || t(c, "name").toUpperCase()}</div>
                     <div className="country-name">{t(c, "name")}</div>
                   </div>
@@ -787,9 +823,9 @@ export default function App() {
             })}
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="how-it-works" id="how-it-works">
+      <motion.section {...sectionAnim} className="how-it-works" id="how-it-works">
         <div className="container">
           <h2 className="section-title" data-i18n="howItWorks.title">Biz qanday ishlaymiz?</h2>
           <div className="timeline">
@@ -812,18 +848,18 @@ export default function App() {
             )}
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="video-section" id="video-section">
+      <motion.section {...sectionAnim} className="video-section" id="video-section">
         <div className="container">
           <h2 className="section-title" data-i18n="video.title">Qisqa videoni ko'ring</h2>
           <div className="video-wrapper">
             <iframe width="560" height="315" src={`https://www.youtube.com/embed/${getVideoId(videoUrl)}`} title="YouTube video" frameBorder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen></iframe>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="results" id="results">
+      <motion.section {...sectionAnim} className="results" id="results">
         <div className="certificates">
           <div className="container">
             <h2 className="section-title" data-i18n="certificates.title">STUDENTLAR FIKRLARI</h2>
@@ -831,7 +867,7 @@ export default function App() {
               {testimonials.length > 0 ? testimonials.slice(0, 3).map((test, i) => (
                 <div className="student-testimonial-card" key={test.id || i}>
                   <div className="student-profile-img">
-                    <img src={test.avatar ? getImageUrl(test.avatar) : `images/students/${i + 1}.webp`} alt={t(test, "name")} className="student-img" data-student-img={i + 1} />
+                    <img src={test.avatar ? getImageUrl(test.avatar) : `images/students/${i + 1}.webp`} alt={t(test, "name")} className="student-img" data-student-img={i + 1} loading="lazy" decoding="async" />
                   </div>
                   <div className="student-testimonial-content">
                     <p className="student-testimonial-text">{t(test, "text")}</p>
@@ -842,7 +878,7 @@ export default function App() {
               )) : (
                 <>
                   <div className="student-testimonial-card">
-                    <div className="student-profile-img"><img src="" alt="Student" className="student-img" data-student-img="1" /></div>
+                    <div className="student-profile-img"><img src="" alt="Student" className="student-img" data-student-img="1" loading="lazy" decoding="async" /></div>
                     <div className="student-testimonial-content">
                       <p className="student-testimonial-text" data-i18n="certificates.students.student4.text">Hammaga salom. Men Muhammadali Sattorov...</p>
                       <h3 className="student-name" data-i18n="certificates.students.student4.name">Muhammadali Sattorov</h3>
@@ -850,7 +886,7 @@ export default function App() {
                     </div>
                   </div>
                   <div className="student-testimonial-card">
-                    <div className="student-profile-img"><img src="" alt="Student" className="student-img" data-student-img="2" /></div>
+                    <div className="student-profile-img"><img src="" alt="Student" className="student-img" data-student-img="2" loading="lazy" decoding="async" /></div>
                     <div className="student-testimonial-content">
                       <p className="student-testimonial-text" data-i18n="certificates.students.student5.text">Hello! My name is MUHAMMADALI...</p>
                       <h3 className="student-name" data-i18n="certificates.students.student5.name">Muhammadali Bakhtiyar</h3>
@@ -858,7 +894,7 @@ export default function App() {
                     </div>
                   </div>
                   <div className="student-testimonial-card">
-                    <div className="student-profile-img"><img src="" alt="Student" className="student-img" data-student-img="3" /></div>
+                    <div className="student-profile-img"><img src="" alt="Student" className="student-img" data-student-img="3" loading="lazy" decoding="async" /></div>
                     <div className="student-testimonial-content">
                       <p className="student-testimonial-text" data-i18n="certificates.students.student6.text">Assalomu alaykum! Men Alibek Eshboltaev...</p>
                       <h3 className="student-name" data-i18n="certificates.students.student6.name">Alibek Eshboltaev</h3>
@@ -895,9 +931,9 @@ export default function App() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="faq" id="faq">
+      <motion.section {...sectionAnim} className="faq" id="faq">
         <div className="container">
           <h2 className="section-title" data-i18n="faq.title">Ko'p beriladigan savollar</h2>
           <p className="faq-cta" data-i18n-html="faq.cta">O'z savolingizga javob topish uchun qo'ng'iroq qiling: <a href="tel:+998712000811">+998712000811</a></p>
@@ -916,9 +952,9 @@ export default function App() {
             )}
           </div>
         </div>
-      </section>
+      </motion.section>
 
-      <section className="location" id="location">
+      <motion.section {...sectionAnim} className="location" id="location">
         <div className="container">
           <h2 className="section-title" data-i18n="location.title">Bizning manzil</h2>
           <div className="location-content">
@@ -932,13 +968,13 @@ export default function App() {
             </div>
           </div>
         </div>
-      </section>
+      </motion.section>
 
       <footer className="footer">
         <div className="container">
           <div className="footer-content">
             <div className="footer-section">
-              <img src="SVG/gorizontal logo qizil mark,oq type.svg" alt="Buran Consulting" className="footer-logo" />
+              <img src="SVG/gorizontal logo qizil mark,oq type.svg" alt="Buran Consulting" className="footer-logo" loading="lazy" decoding="async" />
               <p className="footer-tagline" data-i18n="footer.tagline">Sizning xalqaro ta'lim bo'yicha ishonchli hamkoringiz</p>
             </div>
             <div className="footer-section">
@@ -981,7 +1017,7 @@ export default function App() {
           <div className="modal-header-banner">
             <div className="modal-header-content">
               <div className="modal-header-text"><h3 className="modal-banner-title">KONSULTATSIYA</h3><h4 className="modal-banner-subtitle">CHET ELDA TA'LIM</h4></div>
-              <div className="modal-header-logo"><img src="SVG/gorizontal logo qizil mark,qora type.svg" alt="Buran Consulting" className="modal-logo-img" /></div>
+              <div className="modal-header-logo"><img src="SVG/gorizontal logo qizil mark,qora type.svg" alt="Buran Consulting" className="modal-logo-img" loading="lazy" decoding="async" /></div>
             </div>
           </div>
           <div className="modal-body">
