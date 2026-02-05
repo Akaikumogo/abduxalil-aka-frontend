@@ -3,16 +3,8 @@ import axios from 'axios';
 // API Configuration: .env (VITE_API_URL) yo'q bo'lsa productionda https://aa.akaikumogo.uz dan oladi
 const isLocalHost = ["localhost", "127.0.0.1"].includes(window.location.hostname);
 const FALLBACK_API_ORIGIN = "https://aa.akaikumogo.uz";
-const API_URL = import.meta.env.VITE_API_URL
-  ? import.meta.env.VITE_API_URL
-  : isLocalHost
-    ? "http://localhost:5001/api"
-    : `${FALLBACK_API_ORIGIN}/api`;
-const API_BASE = import.meta.env.VITE_API_URL
-  ? import.meta.env.VITE_API_URL.replace(/\/api\/?$/, "")
-  : isLocalHost
-    ? "http://localhost:5001"
-    : FALLBACK_API_ORIGIN;
+const API_URL = `${FALLBACK_API_ORIGIN}/api`;
+const API_BASE =  FALLBACK_API_ORIGIN;
 
 // Create axios instance
 const api = axios.create({

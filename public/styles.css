@@ -67,6 +67,62 @@ html {
     --shadow-red: 0 4px 15px rgba(228, 47, 29, 0.3);
 }
 
+/* Splash Screen — oq fon, kattaroq logo/matn, minimalistik animatsiya */
+.splash-screen {
+    position: fixed;
+    inset: 0;
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #fff;
+    pointer-events: none;
+}
+
+.splash-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 1.5rem;
+    text-align: center;
+}
+
+.splash-logo-wrap {
+    line-height: 0;
+}
+
+.splash-logo {
+    width: clamp(200px, 40vw, 320px);
+    height: auto;
+    display: block;
+}
+
+.splash-title {
+    font-family: 'ALS Hauss', 'Inter', sans-serif;
+    font-size: clamp(1.5rem, 5vw, 2.25rem);
+    font-weight: 700;
+    color: #111;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    margin: 0;
+}
+
+.splash-loader-track {
+    width: 160px;
+    height: 3px;
+    background: rgba(0, 0, 0, 0.08);
+    border-radius: 2px;
+    overflow: hidden;
+}
+
+.splash-loader {
+    width: 100%;
+    height: 100%;
+    background: var(--brand-red, #c41e3a);
+    border-radius: 2px;
+    transform-origin: left;
+}
+
 /* Brand Fonts - ALS Hauss (fallback to Inter if not available) */
 /* Note: If you have ALS Hauss font files, uncomment and update the paths below */
 /*

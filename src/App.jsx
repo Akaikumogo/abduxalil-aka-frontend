@@ -1,5 +1,6 @@
 import React, { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
+import SplashScreen from "./components/ui/SplashScreen.jsx";
 import { translations } from "./translations.js";
 import { 
   heroApi, statsApi, featuresApi, programsApi, countriesApi, 
@@ -7,10 +8,13 @@ import {
   applicationsApi, chatApi, sendToGoogleSheets, getImageUrl 
 } from "./services/api.js";
 
+const SPLASH_STORAGE_KEY = "buran_splash_shown";
+
 export default function App() {
+  const [showSplash, setShowSplash] = useState(() => !sessionStorage.getItem(SPLASH_STORAGE_KEY));
   const [heroImageSrc, setHeroImageSrc] = useState("");
   const [language, setLanguage] = useState("uz");
-  
+
   // API data states
   const [stats, setStats] = useState([]);
   const [features, setFeatures] = useState([]);
@@ -602,6 +606,14 @@ export default function App() {
 
   return (
     <>
+      {showSplash && (
+        <SplashScreen
+          onComplete={() => {
+            sessionStorage.setItem(SPLASH_STORAGE_KEY, "1");
+            setShowSplash(false);
+          }}
+        />
+      )}
       <header className="header">
         <nav className="navbar">
           <div className="container">
@@ -635,7 +647,7 @@ export default function App() {
       </header>
 
       <motion.section {...sectionAnim} className="hero">
-        <div className="hero-background" style={heroImageSrc ? { backgroundImage: `linear-gradient(135deg, rgba(30, 58, 138, 0.25) 0%, rgba(59, 130, 246, 0.25) 100%), url('${heroImageSrc}')` } : undefined}></div>
+        <div className="hero-background" style={{ backgroundImage: `linear-gradient(135deg, rgba(30, 58, 138, 0.25) 0%, rgba(59, 130, 246, 0.25) 100%), url('https://aa.akaikumogo.uz/uploads/hero/hero_uz_1770042347905.webp')` }}></div>
         <div className="container">
           <div className="hero-content">
             <div className="hero-text">
@@ -663,11 +675,7 @@ export default function App() {
                 const s = rawVal.trim();
                 const m = s.match(/^([+\$]?\d[\d.,]*%?)(?:\s*)(.*)$/);
                 valueText = (m?.[1] || s).trim();
-                labelText = (m?.[2] || "").trim();
-
-                // Apply API prefix/suffix if string value doesn't already contain them
-                if (stat.prefix && !valueText.startsWith(stat.prefix)) valueText = `${stat.prefix}${valueText}`;
-                if (stat.suffix && !valueText.endsWith(stat.suffix)) valueText = `${valueText}${stat.suffix}`;
+                
               } else {
                 valueText = `${stat.prefix || ""}${rawVal}${stat.suffix || ""}`;
               }
@@ -676,7 +684,7 @@ export default function App() {
                 <div className="stat-card" key={stat.id || i} data-value={valueText}>
                   <h2 className="stat-number">
                     <span className="stat-number-value">{valueText}</span>
-                    {labelText && <><br /><span className="stat-number-label">{labelText}</span></>}
+                    {stat?.suffix && <><span className="stat-number-label">{stat?.suffix}</span></>}
                   </h2>
               <div className="stat-line"></div>
                   <p className="stat-text">{t(stat, "description")}</p>
@@ -1005,41 +1013,58 @@ export default function App() {
         </div>
       </motion.section>
 
-      <footer className="footer">
+  <footer className="footer">
         <div className="container">
           <div className="footer-content">
             <div className="footer-section">
-              <img src="SVG/gorizontal logo qizil mark,oq type.svg" alt="Buran Consulting" className="footer-logo" loading="lazy" decoding="async" />
-              <p className="footer-tagline" data-i18n="footer.tagline">Sizning xalqaro ta'lim bo'yicha ishonchli hamkoringiz</p>
+              <div className="footer-logo">
+                <img src="SVG/gorizontal logo oq.svg" alt="Buran Consulting" className="footer-logo-img" />
               </div>
+              <p>Eng yaxshi universitetlar talabasi bo'ling</p>
+            </div>
             <div className="footer-section">
-              <h3 data-i18n="footer.quickLinks">Tezkor havolalar</h3>
-              <ul className="footer-links">
-                <li><a href="#about" data-i18n="nav.about">Biz haqimizda</a></li>
-                <li><a href="#programs" data-i18n="nav.programs">Dasturlar</a></li>
-                <li><a href="#countries" data-i18n="nav.countries">Davlatlar</a></li>
-                <li><a href="#faq" data-i18n="nav.faq">FAQ</a></li>
+              <h4>Sahifalar</h4>
+              <ul>
+                <li>
+                  <a href="#about">Biz haqimizda</a>
+                </li>
+                <li>
+                  <a href="#programs">Bizning dasturlar</a>
+                </li>
+                <li>
+                  <a href="#countries">Davlatlar</a>
+                </li>
+                <li>
+                  <a href="#results">Natijalar</a>
+                </li>
+                <li>
+                  <a href="#faq">Savollar</a>
+                </li>
               </ul>
             </div>
             <div className="footer-section">
-              <h3 data-i18n="footer.contact">Aloqa</h3>
-              <ul className="footer-contact">
-                <li><a href="tel:+998712000811">+998 71 200 08 11</a></li>
-                <li><a href="mailto:info@buranconsulting.uz">info@buranconsulting.uz</a></li>
-                <li>Toshkent, Sayram BC, 7-etaj</li>
-              </ul>
-            </div>
-            <div className="footer-section">
-              <h3 data-i18n="footer.social">Ijtimoiy tarmoqlar</h3>
-              <div className="social-links">
-                <a href="https://t.me/buranconsulting" target="_blank" rel="noopener noreferrer" aria-label="Telegram">📱</a>
-                <a href="https://instagram.com/buranconsulting" target="_blank" rel="noopener noreferrer" aria-label="Instagram">📷</a>
-                <a href="https://youtube.com/@buranconsulting" target="_blank" rel="noopener noreferrer" aria-label="YouTube">🎬</a>
+              <h4>Aloqa</h4>
+              <p>
+                <a href="tel:+998712000811">+998 71 200 08 11</a>
+              </p>
+              <p>
+                <a href="mailto:info@buranconsulting.uz">
+                  info@buranconsulting.uz
+                </a>
+              </p>
+              <div className="footer-address">
+                <p>
+                  <strong>MANZIL:</strong> Toshkent shahri, Mirzo Ulug'bek t,
+                  5-y proyezd Sayram 4A. Sayram bizness markazi, 7-etaj
+                </p>
+                <p>
+                  <strong>Ⓜ️</strong> Buyuk ipak yo'li Metro 5-6 daqiqa.
+                </p>
               </div>
             </div>
           </div>
           <div className="footer-bottom">
-            <p>© 2024 Buran Consulting. Barcha huquqlar himoyalangan.</p>
+            <p>&copy; 2026 Buran Consulting. Barcha huquqlar himoyalangan.</p>
           </div>
         </div>
       </footer>
