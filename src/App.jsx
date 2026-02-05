@@ -1020,30 +1020,30 @@ export default function App() {
               <div className="footer-logo">
                 <img src="SVG/gorizontal logo oq.svg" alt="Buran Consulting" className="footer-logo-img" />
               </div>
-              <p>Eng yaxshi universitetlar talabasi bo'ling</p>
+              <p data-i18n="footer.tagline">Eng yaxshi universitetlar talabasi bo'ling</p>
             </div>
             <div className="footer-section">
-              <h4>Sahifalar</h4>
+              <h4 data-i18n="footer.pages">Sahifalar</h4>
               <ul>
                 <li>
-                  <a href="#about">Biz haqimizda</a>
+                  <a href="#about" data-i18n="nav.about">Biz haqimizda</a>
                 </li>
                 <li>
-                  <a href="#programs">Bizning dasturlar</a>
+                  <a href="#programs" data-i18n="nav.programs">Bizning dasturlar</a>
                 </li>
                 <li>
-                  <a href="#countries">Davlatlar</a>
+                  <a href="#countries" data-i18n="nav.countries">Davlatlar</a>
                 </li>
                 <li>
-                  <a href="#results">Natijalar</a>
+                  <a href="#results" data-i18n="nav.results">Natijalar</a>
                 </li>
                 <li>
-                  <a href="#faq">Savollar</a>
+                  <a href="#faq" data-i18n="nav.faq">Savollar</a>
                 </li>
               </ul>
             </div>
             <div className="footer-section">
-              <h4>Aloqa</h4>
+              <h4 data-i18n="footer.contact">Aloqa</h4>
               <p>
                 <a href="tel:+998712000811">+998 71 200 08 11</a>
               </p>
@@ -1054,17 +1054,18 @@ export default function App() {
               </p>
               <div className="footer-address">
                 <p>
-                  <strong>MANZIL:</strong> Toshkent shahri, Mirzo Ulug'bek t,
-                  5-y proyezd Sayram 4A. Sayram bizness markazi, 7-etaj
+                  <strong data-i18n="location.address.title">MANZIL:</strong>{' '}
+                  <span data-i18n="location.address.text">Toshkent shahri, Mirzo Ulug'bek t, 5-y proyezd Sayram 4A. Sayram bizness markazi, 7-etaj</span>
                 </p>
                 <p>
-                  <strong>Ⓜ️</strong> Buyuk ipak yo'li Metro 5-6 daqiqa.
+                  <strong>Ⓜ️</strong>{' '}
+                  <span data-i18n="location.metro.text">Buyuk ipak yo'li Metro 5-6 daqiqa.</span>
                 </p>
               </div>
             </div>
           </div>
           <div className="footer-bottom">
-            <p>&copy; 2026 Buran Consulting. Barcha huquqlar himoyalangan.</p>
+            <p>&copy; 2026 Buran Consulting. <span data-i18n="footer.copyright">Barcha huquqlar himoyalangan.</span></p>
           </div>
         </div>
       </footer>
