@@ -294,44 +294,7 @@ export default function App() {
       addListener(document.getElementById("modalConsultationForm"), "submit", handleSubmit);
     };
 
-    // Stats animation
-    const initStatsAnimation = () => {
-      const animateValue = (element, start, end, duration, options = {}) => {
-        const { prefix = "", suffix = "" } = options;
-        let startTimestamp = null;
-        const step = (timestamp) => {
-          if (!startTimestamp) startTimestamp = timestamp;
-          const progress = Math.min((timestamp - startTimestamp) / duration, 1);
-          const easeOut = 1 - Math.pow(1 - progress, 3);
-          const current = Math.floor(easeOut * (end - start) + start);
-          element.textContent = prefix + current.toLocaleString() + suffix;
-          if (progress < 1) requestAnimationFrame(step);
-          else element.textContent = prefix + end.toLocaleString() + suffix;
-        };
-        requestAnimationFrame(step);
-      };
-
-      const observer = new IntersectionObserver((entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting && !entry.target.classList.contains("animate")) {
-              entry.target.classList.add("animate");
-            const statNumber = entry.target.querySelector(".stat-number-value");
-            const original = entry.target.getAttribute("data-value") || "0";
-            const value = parseInt(original.replace(/[^0-9]/g, ""), 10) || 0;
-            const prefix = original.includes("$") ? "$" : original.startsWith("+") ? "+" : "";
-            const suffix = original.includes("%") ? "%" : original.endsWith("+") ? "+" : "";
-            if (statNumber) {
-              setTimeout(() => animateValue(statNumber, 0, value, 2500, { prefix, suffix }), 300);
-            }
-          }
-        });
-      }, { threshold: 0.2 });
-
-      document.querySelectorAll(".stat-card").forEach((card) => observer.observe(card));
-      cleanups.push(() => observer.disconnect());
-    };
-
-    // About slider — eski frontend (@frontend/) bilan bir xil: avto-slide, dots, prev/next
+    // About slider — faqat public folder (backend dan emas): images/about/1.jpg, 2.webp, ...
     const initAboutSlider = () => {
       const sliderContainer = document.querySelector(".about-slider-container");
       const dotsContainer = document.querySelector(".about-slider-dots");
@@ -534,13 +497,55 @@ export default function App() {
     initFaq();
     initConsultationModal();
     initConsultationForms();
-    initStatsAnimation();
     initAboutSlider();
     initStudentImages();
     initChatWidget();
 
     return () => cleanups.forEach((c) => c());
   }, []);
+
+  // Stats raqam animatsiyasi — stats/displayStats o‘zgaganda yangi kartalarga observer ulanadi
+  useEffect(() => {
+    // Animatsiya faqat raqamni (va prefix) o‘z ichiga oladi, suffix alohida .stat-number-label da
+    const animateValue = (element, start, end, duration, options = {}) => {
+      const { prefix = "" } = options;
+      let startTimestamp = null;
+      const step = (timestamp) => {
+        if (!startTimestamp) startTimestamp = timestamp;
+        const progress = Math.min((timestamp - startTimestamp) / duration, 1);
+        const easeOut = 1 - Math.pow(1 - progress, 3);
+        const current = Math.floor(easeOut * (end - start) + start);
+        element.textContent = prefix + current.toLocaleString();
+        if (progress < 1) requestAnimationFrame(step);
+        else element.textContent = prefix + end.toLocaleString();
+      };
+      requestAnimationFrame(step);
+    };
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (entry.isIntersecting && !entry.target.classList.contains("animate")) {
+          entry.target.classList.add("animate");
+          const statNumber = entry.target.querySelector(".stat-number-value");
+          const original = entry.target.getAttribute("data-value") || "0";
+          const value = parseInt(original.replace(/[^0-9]/g, ""), 10) || 0;
+          const prefix = original.includes("$") ? "$" : original.startsWith("+") ? "+" : "";
+          if (statNumber) {
+            setTimeout(() => animateValue(statNumber, 0, value, 2500, { prefix }), 300);
+          }
+        }
+      });
+    }, { threshold: 0.2 });
+
+    const scheduleObserve = () => {
+      document.querySelectorAll(".stat-card").forEach((card) => observer.observe(card));
+    };
+    const t = setTimeout(scheduleObserve, 0);
+    return () => {
+      clearTimeout(t);
+      observer.disconnect();
+    };
+  }, [stats]);
 
   // Helper to get localized content
   const t = (item, field) => {
@@ -667,24 +672,23 @@ export default function App() {
           <div className="stats-grid">
             {displayStats.map((stat, i) => {
               const rawVal = stat.value ?? (parseInt(String(stat.descriptionUz || "").replace(/[^0-9]/g, ""), 10) || 0);
+              const numVal = typeof rawVal === "number" ? rawVal : (parseInt(String(rawVal).replace(/[^0-9]/g, ""), 10) || 0);
 
               let valueText = "";
-              let labelText = "";
-
               if (typeof rawVal === "string") {
                 const s = rawVal.trim();
                 const m = s.match(/^([+\$]?\d[\d.,]*%?)(?:\s*)(.*)$/);
                 valueText = (m?.[1] || s).trim();
-                
               } else {
                 valueText = `${stat.prefix || ""}${rawVal}`;
               }
+              const displayValue = `${stat.prefix || ""}${numVal}`;
 
               return (
                 <div className="stat-card" key={stat.id || i} data-value={valueText}>
                   <h2 className="stat-number">
-                    <span className="stat-number-value">{valueText}</span>
-                    {stat?.suffix && <><span className="stat-number-label">{stat?.suffix}</span></>}
+                    <span className="stat-number-value">{displayValue}</span>
+                    {stat?.suffix ? <span className="stat-number-label">{stat.suffix}</span> : null}
                   </h2>
               <div className="stat-line"></div>
                   <p className="stat-text">{t(stat, "description")}</p>
