@@ -677,7 +677,7 @@ export default function App() {
                 valueText = (m?.[1] || s).trim();
                 
               } else {
-                valueText = `${stat.prefix || ""}${rawVal}${stat.suffix || ""}`;
+                valueText = `${stat.prefix || ""}${rawVal}`;
               }
 
               return (
