@@ -955,7 +955,7 @@ export default function App() {
           <div className="container">
             <h2 className="section-title" data-i18n="certificates.title">STUDENTLAR FIKRLARI</h2>
             <div className="student-testimonials-grid">
-              {testimonials.length > 0 ? testimonials.slice(0, 3).map((test, i) => {
+              {testimonials.length > 0 ? testimonials.map((test, i) => {
                 const hasAvatar = !!test.avatar;
                 const imgSrc = hasAvatar
                   ? getImageUrl(test.avatar)
