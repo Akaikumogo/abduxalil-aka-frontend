@@ -176,6 +176,18 @@ export const aboutApi = {
   },
 };
 
+// About slider images (gallery)
+export const aboutImagesApi = {
+  getAll: async () => {
+    try {
+      const response = await api.get('/about/images');
+      return response.data.data || [];
+    } catch (error) {
+      return [];
+    }
+  },
+};
+
 // Contact Settings
 export const contactApi = {
   get: async () => {

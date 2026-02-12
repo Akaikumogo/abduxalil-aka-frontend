@@ -4,7 +4,7 @@ import SplashScreen from "./components/ui/SplashScreen.jsx";
 import { translations } from "./translations.js";
 import { 
   heroApi, statsApi, featuresApi, programsApi, countriesApi, 
-  stepsApi, videoApi, testimonialsApi, tipsApi, faqApi, aboutApi, contactApi,
+  stepsApi, videoApi, testimonialsApi, tipsApi, faqApi, aboutApi, aboutImagesApi, contactApi,
   applicationsApi, chatApi, sendToGoogleSheets, getImageUrl 
 } from "./services/api.js";
 
@@ -27,6 +27,15 @@ export default function App() {
   const [faqs, setFaqs] = useState([]);
   const [mapUrl, setMapUrl] = useState("");
   const [aboutSettings, setAboutSettings] = useState(null);
+
+  // Helper: preload hero image before ko'rsatish
+  const preloadImage = (src, onLoad) => {
+    if (!src) return;
+    const img = new Image();
+    img.onload = () => onLoad(src);
+    img.onerror = () => onLoad(src); // xato bo'lsa ham URLni o'rnatamiz
+    img.src = src;
+  };
 
   useEffect(() => {
     const cleanups = [];
@@ -67,11 +76,14 @@ export default function App() {
         if (tipsData?.length) setTips(tipsData);
         if (faqData?.length) setFaqs(faqData);
 
-        // Hero image from API
+        // Hero image from API (preload first)
         if (heroData) {
           const lang = localStorage.getItem("selectedLanguage") || "uz";
           const imgPath = lang === "en" ? heroData.imageEn : heroData.imageUz;
-          if (imgPath) setHeroImageSrc(getImageUrl(imgPath));
+          const fullUrl = imgPath ? getImageUrl(imgPath) : null;
+          if (fullUrl) {
+            preloadImage(fullUrl, setHeroImageSrc);
+          }
         }
         if (contactData?.mapUrl) setMapUrl(contactData.mapUrl);
         if (aboutData) setAboutSettings(aboutData);
@@ -113,11 +125,14 @@ export default function App() {
           btn.classList.toggle("active", btn.getAttribute("data-lang") === lang);
         });
 
-        // Update hero image based on language
+        // Update hero image based on language (preload)
         heroApi.getSettings().then((data) => {
           if (data) {
             const imgPath = lang === "en" ? data.imageEn : data.imageUz;
-            if (imgPath) setHeroImageSrc(getImageUrl(imgPath));
+            const fullUrl = imgPath ? getImageUrl(imgPath) : null;
+            if (fullUrl) {
+              preloadImage(fullUrl, setHeroImageSrc);
+            }
           }
         }).catch(() => {});
       };
@@ -294,7 +309,7 @@ export default function App() {
       addListener(document.getElementById("modalConsultationForm"), "submit", handleSubmit);
     };
 
-    // About slider — faqat public folder (backend dan emas): images/about/1.jpg, 2.webp, ...
+    // About slider — avval backenddan rasmlar, bo'lmasa public/images/about/*
     const initAboutSlider = () => {
       const sliderContainer = document.querySelector(".about-slider-container");
       const dotsContainer = document.querySelector(".about-slider-dots");
@@ -314,13 +329,35 @@ export default function App() {
           img.src = src;
         });
 
+      // Avval backenddagi gallery dan rasmlar olamiz, bo'lmasa public papkadan qidiramiz
       const findAvailableImages = async () => {
+        // 1) Backend gallery
+        try {
+          const apiImages = await aboutImagesApi.getAll();
+          if (Array.isArray(apiImages) && apiImages.length) {
+            const mapped = apiImages
+              .slice()
+              .sort((a, b) => (a.order || 0) - (b.order || 0))
+              .map((item, index) => ({
+                index,
+                path: getImageUrl(item.imageUrl) || item.imageUrl,
+              }))
+              .filter((img) => !!img.path);
+
+            if (mapped.length) return mapped;
+          }
+        } catch (e) {
+          // ignore and fallback to static files
+        }
+
+        // 2) Fallback: public/images/about/*
         const foundImages = [];
         for (let i = 1; i <= maxImages; i += 1) {
           let imageFound = false;
           for (let j = 0; j < imageFormats.length; j += 1) {
             const format = imageFormats[j];
             const imagePath = `images/about/${i}.${format}`;
+            // eslint-disable-next-line no-await-in-loop
             const exists = await checkImageExists(imagePath);
             if (exists && !imageFound) {
               imageFound = true;
@@ -652,7 +689,14 @@ export default function App() {
       </header>
 
       <motion.section {...sectionAnim} className="hero">
-        <div className="hero-background" style={{ backgroundImage: `linear-gradient(135deg, rgba(30, 58, 138, 0.25) 0%, rgba(59, 130, 246, 0.25) 100%), url('https://aa.akaikumogo.uz/uploads/hero/hero_uz_1770042347905.webp')` }}></div>
+        <div
+          className="hero-background"
+          style={{
+            backgroundImage: `linear-gradient(135deg, rgba(30, 58, 138, 0.25) 0%, rgba(59, 130, 246, 0.25) 100%), url('${
+              heroImageSrc || "https://aa.akaikumogo.uz/uploads/hero/hero_uz_1770042347905.webp"
+            }')`,
+          }}
+        ></div>
         <div className="container">
           <div className="hero-content">
             <div className="hero-text">
@@ -911,18 +955,32 @@ export default function App() {
           <div className="container">
             <h2 className="section-title" data-i18n="certificates.title">STUDENTLAR FIKRLARI</h2>
             <div className="student-testimonials-grid">
-              {testimonials.length > 0 ? testimonials.slice(0, 3).map((test, i) => (
-                <div className="student-testimonial-card" key={test.id || i}>
-                <div className="student-profile-img">
-                    <img src={test.avatar ? getImageUrl(test.avatar) : `images/students/${i + 1}.webp`} alt={t(test, "name")} className="student-img" data-student-img={i + 1} loading="lazy" decoding="async" />
-                </div>
-                <div className="student-testimonial-content">
-                    <p className="student-testimonial-text">{t(test, "text")}</p>
-                    <h3 className="student-name">{t(test, "name")}</h3>
-                    <p className="student-university">{t(test, "university")}</p>
-                </div>
-              </div>
-              )) : (
+              {testimonials.length > 0 ? testimonials.slice(0, 3).map((test, i) => {
+                const hasAvatar = !!test.avatar;
+                const imgSrc = hasAvatar
+                  ? getImageUrl(test.avatar)
+                  : `images/students/${i + 1}.webp`;
+
+                return (
+                  <div className="student-testimonial-card" key={test.id || i}>
+                    <div className="student-profile-img">
+                      <img
+                        src={imgSrc}
+                        alt={t(test, "name")}
+                        className="student-img"
+                        data-student-img={hasAvatar ? undefined : i + 1}
+                        loading="lazy"
+                        decoding="async"
+                      />
+                    </div>
+                    <div className="student-testimonial-content">
+                      <p className="student-testimonial-text">{t(test, "text")}</p>
+                      <h3 className="student-name">{t(test, "name")}</h3>
+                      <p className="student-university">{t(test, "university")}</p>
+                    </div>
+                  </div>
+                );
+              }) : (
                 <>
               <div className="student-testimonial-card">
                     <div className="student-profile-img"><img src="" alt="Student" className="student-img" data-student-img="1" loading="lazy" decoding="async" /></div>
