@@ -1,4 +1,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://buranconsulting.uz/sitemap.xml
+Sitemap: https://www.buranconsulting.uz/sitemap.xml
