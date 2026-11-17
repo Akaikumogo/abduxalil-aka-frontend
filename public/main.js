@@ -153,7 +153,7 @@
   function loadMap() {
     if (mapLoaded) return; mapLoaded = true;
     var f = d.createElement("iframe");
-    f.src = "https://yandex.uz/map-widget/v1/?ll=69.285278%2C41.341389&z=17&pt=69.285278,41.341389,pm2rdm";
+    f.src = "https://yandex.uz/map-widget/v1/?ll=69.322619%2C41.329326&z=17&pt=69.322619,41.329326,pm2rdm";
     f.title = "Buran Consulting — xarita";
     f.loading = "lazy";
     map.innerHTML = ""; map.appendChild(f);
