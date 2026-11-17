@@ -251,5 +251,14 @@
   });
   if (store("lang") === "en") setLang("en");
 
+  /* ---------- Logo: back to top ---------- */
+  $(".logo").addEventListener("click", function (e) {
+    if (location.pathname !== "/" && location.pathname !== "/index.html") return;
+    e.preventDefault();
+    closeMenu();
+    window.scrollTo({ top: 0, behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth" });
+    if (location.hash) history.replaceState(null, "", location.pathname + location.search);
+  });
+
   $("#year").textContent = new Date().getFullYear();
 })();
