@@ -285,3 +285,26 @@ h2{font-size:clamp(30px,3.8vw,46px);letter-spacing:-.03em}
   .mbar.is-on{transform:none}
   .mbar .btn{min-height:48px;padding:0 10px;min-width:0;font-size:15px}
 }
+
+/* Telegram */
+.tg-ico{width:20px;height:20px;fill:currentColor;stroke:none;flex:none}
+.btn--tg{background:#229ed9;color:#fff;box-shadow:0 6px 18px rgba(34,158,217,.28)}
+.btn--tg:hover{background:#1a86ba;transform:translateY(-1px)}
+.leadbox__call+.btn--tg{margin-top:18px}
+.contact__btns{display:flex;flex-wrap:wrap;gap:10px}
+.tgfab{position:fixed;right:24px;bottom:24px;z-index:45;display:flex;align-items:center;gap:10px;height:56px;padding:0 20px 0 16px;border-radius:999px;background:#229ed9;color:#fff;font-weight:700;text-decoration:none;box-shadow:0 10px 28px rgba(34,158,217,.4);transition:transform .2s,background .2s}
+.tgfab:hover{background:#1a86ba;transform:translateY(-2px)}
+.tgfab .tg-ico{width:24px;height:24px}
+.mbar__call{padding:0!important}
+.mbar__call svg{width:20px;height:20px;fill:currentColor;stroke:none}
+@media (max-width:640px){
+  .tgfab{display:none}
+  .mbar{grid-template-columns:48px 1fr 1.3fr!important}
+  .mbar .btn--tg{gap:6px}
+}
+
+/* Mobile nav menu height fix: header's backdrop-filter makes it the containing block for the fixed menu */
+@media (max-width:1100px){
+  .nav{bottom:auto;height:calc(100vh - var(--hdr));height:calc(100dvh - var(--hdr));box-shadow:0 1px 0 var(--line) inset}
+}
+.nav__tg{color:#229ed9!important;margin-top:0!important}

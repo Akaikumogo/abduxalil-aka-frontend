@@ -219,7 +219,7 @@
     "ct.land.v": "Bo'z bozor, British School, Anor Bank · 5–6 min from Buyuk Ipak Yo'li metro",
     "ct.route": "Get directions ↗", "ct.map": "Show map",
     "ft.tag": "Become a student at the best universities.", "ft.pages": "Pages", "ft.rights": "All rights reserved.",
-    "mbar.call": "Call"
+    "mbar.call": "Call", "tg.write": "Message on Telegram", "tg.short": "Telegram"
   };
   var UZ_MSG = {
     "f.err": "Iltimos, ismingiz va to'liq telefon raqamingizni kiriting.",
