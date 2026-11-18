@@ -1,0 +1,13 @@
+export { Hero } from './Hero';
+export { Statistics } from './Statistics';
+export { ConsultationSection } from './ConsultationSection';
+export { About } from './About';
+export { WhyUs } from './WhyUs';
+export { Programs } from './Programs';
+export { Countries } from './Countries';
+export { Steps } from './Steps';
+export { VideoSection } from './VideoSection';
+export { Testimonials } from './Testimonials';
+export { VideoTips } from './VideoTips';
+export { FAQ } from './FAQ';
+export { Location } from './Location';
