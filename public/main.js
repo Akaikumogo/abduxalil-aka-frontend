@@ -5,7 +5,7 @@
   root.classList.add("js");
 
   // Lead endpoint (same Google Sheet the old site wrote to)
-  var SHEET_URL = "https://script.google.com/macros/s/AKfycbzIuKKLnno4ft6uZkoZPR-wO7qiWYO7ju0fLK5yzWvwmqL0IEVCjKNmngqIC1ONVG_Teg/exec";
+  var SHEET_URL = "https://script.google.com/macros/s/AKfycbwf2VLn8y7sQnt1WQexv0I-1u47EFhQ2eSv32Pf0a1Q2I7k2Fv7Qgba3Xkk-95H3JNAjg/exec";
 
   function $(s, c) { return (c || d).querySelector(s); }
   function $$(s, c) { return Array.prototype.slice.call((c || d).querySelectorAll(s)); }
